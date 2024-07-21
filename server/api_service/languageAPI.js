@@ -23,6 +23,6 @@ async function analyze(query) {
     const [result] = await client.analyzeEntities({document: document});
     const entities = result.entities;
     const [classify] = await client.classifyText({document, classificationModelOptions})
-    return entities;
+    return { entities:entities,classes:classify.categories};
   }
   module.exports = analyze;
