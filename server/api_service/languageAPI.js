@@ -22,11 +22,7 @@ async function analyze(query) {
     // Detects the sentiment of the text
     const [result] = await client.analyzeEntities({document: document});
     const entities = result.entities;
-    console.log(`Text: Entities and sentiment`);
     const [classify] = await client.classifyText({document, classificationModelOptions})
-     console.log(classify.categories);
-     return classify.categories;
+    return entities;
   }
-
-
   module.exports = analyze;
