@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input"
 import { VscSend } from "react-icons/vsc";
 export default function Home({handleContent}:{handleContent:(prompt:string,file:File)=>void}) {
   const [prompt,setPrompt] = useState("");
+  const[history,setHistory] = useState<string[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
- async function handleFile(e:React.ChangeEvent<HTMLInputElement>){
+  const historyRef = useRef<HTMLUListElement>(null);
+function handleFile(e:React.ChangeEvent<HTMLInputElement>){
         const selectedFile = e.target.files?e.target.files[0]:null;
         setFile(selectedFile);
 }
@@ -27,23 +29,36 @@ export default function Home({handleContent}:{handleContent:(prompt:string,file:
     try{
       const response = await fetch('http://localhost:4000/api/analyze',{
         method : 'POST',
-        body:formData,
+        body: formData,
   });
   const result = await response.json();
-  console.log(result);
+  setHistory(prev=>[...prev,result]);
+  
 }catch(err){
     console.log(err);
 }
+   setHistory((prev)=>[...prev,prompt]);
   }
+  useEffect(() => {
+    if (history) {
+     history.forEach(historyText => {
+        const listItem = document.createElement('li');
+          listItem.textContent = historyText;
+        listItem.className = 'text-gray-600 cursor-pointer mb-10 absolute right-10 '; // Styling
+      historyRef.current?.appendChild(listItem);
+      });
+    }
+  }, [history]);
   return (
     <main className="align-center p-10 flex flex-col items-center w-full h-screen relative">
-    <div className='w-full flex flex-row items-center justify-end gap-10'>
+    {/* <div className='w-full flex flex-row items-center justify-end gap-10'>
      <a href='/'>Home</a>
      <a href='/login'>Login</a>
-    </div>
+    </div> */}
   <h1 className='font-xl'>Summarize Texts And Documents Fast</h1>
 
   <div className="w-full h-full absolute bottom-0 left-0 flex flex-col justify-end">
+    <ul id='history-list' className="max-h-48 overflow-y-auto" ref = {historyRef}></ul>
     <div className="bg-white p-5 rounded-t-xl shadow-md flex flex-row items-center gap-5">
       <div>
     
@@ -53,7 +68,7 @@ export default function Home({handleContent}:{handleContent:(prompt:string,file:
       <p>{file?.name}</p>
     <input id='file-input' className='hidden' type='file' accept='.pdf,.html' onChange={handleFile}></input>
     </div>
-      <Input ref={inputRef} type='text' autoFocus placeholder='Enter prompt...' className='rounded-md' onChange={handleChange}></Input>
+      <Input ref={inputRef} type='text' autoFocus placeholder='Enter prompt...' className='rounded-md' onChange={handleChange} value={inputRef.current?.value}></Input>
       <button className='h-6 w-6 text-gray-600' onClick={handleSubmit}>
       <VscSend/>
       </button>
